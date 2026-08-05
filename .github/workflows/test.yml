@@ -3,6 +3,7 @@ on: [push, pull_request]
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   test:
@@ -18,6 +19,33 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Test SDK injection
+        shell: bash
+        run: |
+          HTML='<!DOCTYPE html><html><head><title>Test</title></head><body><h1>Hello</h1></body></html>'
+          TEST_FILE="$RUNNER_TEMP/test_inject.html"
+          echo "$HTML" > "$TEST_FILE"
+          python3 "${{ github.workspace }}/scripts/inject-wavedash-sdk.py" "$TEST_FILE" 1.3.40
+
+          if ! grep -q 'modulepreload' "$TEST_FILE"; then
+            echo "FAIL: modulepreload link not injected" >&2
+            exit 1
+          fi
+          if ! grep -q 'type="module"' "$TEST_FILE"; then
+            echo "FAIL: SDK script not injected" >&2
+            exit 1
+          fi
+
+          BEFORE=$(wc -c < "$TEST_FILE")
+          python3 "${{ github.workspace }}/scripts/inject-wavedash-sdk.py" "$TEST_FILE" 1.3.40
+          AFTER=$(wc -c < "$TEST_FILE")
+          if [ "$BEFORE" != "$AFTER" ]; then
+            echo "FAIL: injection is not idempotent" >&2
+            exit 1
+          fi
+
+          echo "SDK injection tests passed"
+
       - name: Run action
         if: env.WAVEDASH_TOKEN != '' && env.WAVEDASH_GAME_ID != ''
         id: wavedash
@@ -30,8 +58,36 @@ jobs:
           build-version: ${{ github.sha }}
 
       - name: Verify build-id output
-        if: steps.wavedash.outputs.build-id != ''
+        if: steps.wavedash.outputs.build-id
         shell: bash
         run: |
           echo "build-id: ${{ steps.wavedash.outputs.build-id }}"
           echo "playtest-url: ${{ steps.wavedash.outputs.playtest-url }}"
+
+      - name: Comment build info on PR
+        if: steps.wavedash.outputs.build-id && github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "## Wavedash Build
+
+          | Field | Value |
+          | --- | --- |
+          | Build ID | ${{ steps.wavedash.outputs.build-id }} |
+          | Playtest URL | ${{ steps.wavedash.outputs.playtest-url }} |"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Verify SDK injection in entrypoint
+        if: steps.wavedash.outputs.build-id
+        shell: bash
+        run: |
+          ENTRYPOINT="./test/dist/index.html"
+          if ! grep -q 'modulepreload' "$ENTRYPOINT"; then
+            echo "FAIL: modulepreload link not found in entrypoint" >&2
+            exit 1
+          fi
+          if ! grep -q 'type="module"' "$ENTRYPOINT"; then
+            echo "FAIL: SDK script not found in entrypoint" >&2
+            exit 1
+          fi
+          echo "SDK injection verified in entrypoint"
