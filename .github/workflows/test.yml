@@ -16,9 +16,22 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Run action
-        uses: ./
-
-      - name: Run action with version
+        if: >-
+          ${{
+            secrets.WAVEDASH_TOKEN != '' &&
+            secrets.WAVEDASH_GAME_ID != ''
+          }}
+        id: wavedash
         uses: ./
         with:
-          version: 2.3.4
+          token: ${{ secrets.WAVEDASH_TOKEN }}
+          game-id: ${{ secrets.WAVEDASH_GAME_ID }}
+          upload-dir: ./test/dist
+          entrypoint: index.html
+
+      - name: Verify build-id output
+        if: ${{ steps.wavedash.outputs.build-id != '' }}
+        shell: bash
+        run: |
+          echo "build-id: ${{ steps.wavedash.outputs.build-id }}"
+          echo "playtest-url: ${{ steps.wavedash.outputs.playtest-url }}"
