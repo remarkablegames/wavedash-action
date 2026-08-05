@@ -10,7 +10,7 @@ inputs:
   config:
     description: Path to wavedash.toml
     required: false
-    default: ./wavedash.toml
+    default: wavedash.toml
 
   game-id:
     description: Game ID used to create wavedash.toml when it is missing
@@ -36,32 +36,31 @@ inputs:
     required: false
     default: "false"
 
-  version:
-    description: Build version or message passed to wavedash build push
+  build-version:
+    description: Build version or message passed to wavedash build push -m
     required: false
-    default: 1.2.3
 
-  title:
+  publish-title:
     description: Release title passed to wavedash publish
     required: false
 
-  summary:
+  publish-summary:
     description: Release summary passed to wavedash publish
     required: false
 
-  added:
+  publish-added:
     description: Added changelog items passed to wavedash publish (one per line)
     required: false
 
-  removed:
+  publish-removed:
     description: Removed changelog items for wavedash publish (one per line)
     required: false
 
-  fixed:
+  publish-fixed:
     description: Fixed changelog items for wavedash publish (one per line)
     required: false
 
-  adjusted:
+  publish-adjusted:
     description: Adjusted changelog items for wavedash publish (one per line)
     required: false
 
@@ -84,19 +83,8 @@ runs:
     - name: Install Wavedash CLI
       shell: bash
       run: |
-        if ! command -v wavedash >/dev/null 2>&1; then
-          curl -fsSL https://wavedash.com/cli/install.sh | sh
-          for dir in \
-            "$HOME/.wavedash/bin" \
-            "$HOME/.local/bin" \
-            "$HOME/.cargo/bin"; do
-              [ -d "$dir" ] && PATH="$dir:$PATH"
-          done
-          export PATH
-        fi
+        curl -fsSL https://wavedash.com/cli/install.sh | sh
         wavedash --version
-      env:
-        WAVEDASH_TOKEN: ${{ inputs.token }}
 
     - name: Create wavedash.toml
       shell: bash
@@ -144,15 +132,11 @@ runs:
       id: upload
       shell: bash
       run: |
-        for dir in \
-          "$HOME/.wavedash/bin" \
-          "$HOME/.local/bin" \
-          "$HOME/.cargo/bin"; do
-            [ -d "$dir" ] && PATH="$dir:$PATH"
-        done
-        export PATH
+        MESSAGE_FLAG=()
+        [ -n "$BUILD_VERSION" ] && MESSAGE_FLAG=(-m "$BUILD_VERSION")
 
-        OUTPUT=$(wavedash build push --config "$CONFIG" -m "$VERSION" 2>&1)
+        OUTPUT=$(wavedash build push \
+          --config "$CONFIG" "${MESSAGE_FLAG[@]}" 2>&1)
         echo "$OUTPUT"
 
         BUILD_ID=$(echo "$OUTPUT" | \
@@ -169,7 +153,7 @@ runs:
         echo "playtest-url=$PLAYTEST_URL" >> "$GITHUB_OUTPUT"
       env:
         CONFIG: ${{ inputs.config }}
-        VERSION: ${{ inputs.version }}
+        BUILD_VERSION: ${{ inputs.build-version }}
         WAVEDASH_TOKEN: ${{ inputs.token }}
 
     - name: Publish build
@@ -181,45 +165,37 @@ runs:
           exit 0
         fi
 
-        for dir in \
-          "$HOME/.wavedash/bin" \
-          "$HOME/.local/bin" \
-          "$HOME/.cargo/bin"; do
-            [ -d "$dir" ] && PATH="$dir:$PATH"
-        done
-        export PATH
-
         ARGS=()
-        [ -n "$TITLE" ] && ARGS+=(--title "$TITLE")
-        [ -n "$SUMMARY" ] && ARGS+=(--summary "$SUMMARY")
+        [ -n "$PUBLISH_TITLE" ] && ARGS+=(--title "$PUBLISH_TITLE")
+        [ -n "$PUBLISH_SUMMARY" ] && ARGS+=(--summary "$PUBLISH_SUMMARY")
 
         while IFS= read -r line; do
           [ -n "$line" ] && ARGS+=(--added "$line")
-        done <<< "$ADDED"
+        done <<< "$PUBLISH_ADDED"
 
         while IFS= read -r line; do
           [ -n "$line" ] && ARGS+=(--removed "$line")
-        done <<< "$REMOVED"
+        done <<< "$PUBLISH_REMOVED"
 
         while IFS= read -r line; do
           [ -n "$line" ] && ARGS+=(--fixed "$line")
-        done <<< "$FIXED"
+        done <<< "$PUBLISH_FIXED"
 
         while IFS= read -r line; do
           [ -n "$line" ] && ARGS+=(--adjusted "$line")
-        done <<< "$ADJUSTED"
+        done <<< "$PUBLISH_ADJUSTED"
 
         wavedash publish "$BUILD_ID" --config "$CONFIG" "${ARGS[@]}"
         echo "published=true" >> "$GITHUB_OUTPUT"
       env:
         CONFIG: ${{ inputs.config }}
         PUBLISH: ${{ inputs.publish }}
-        TITLE: ${{ inputs.title }}
-        SUMMARY: ${{ inputs.summary }}
-        ADDED: ${{ inputs.added }}
-        REMOVED: ${{ inputs.removed }}
-        FIXED: ${{ inputs.fixed }}
-        ADJUSTED: ${{ inputs.adjusted }}
+        PUBLISH_TITLE: ${{ inputs.publish-title }}
+        PUBLISH_SUMMARY: ${{ inputs.publish-summary }}
+        PUBLISH_ADDED: ${{ inputs.publish-added }}
+        PUBLISH_REMOVED: ${{ inputs.publish-removed }}
+        PUBLISH_FIXED: ${{ inputs.publish-fixed }}
+        PUBLISH_ADJUSTED: ${{ inputs.publish-adjusted }}
         BUILD_ID: ${{ steps.upload.outputs.build-id }}
         WAVEDASH_TOKEN: ${{ inputs.token }}
 

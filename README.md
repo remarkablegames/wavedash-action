@@ -4,7 +4,7 @@
 [![test](https://github.com/remarkablegames/wavedash-action/actions/workflows/test.yml/badge.svg)](https://github.com/remarkablegames/wavedash-action/actions/workflows/test.yml)
 [![lint](https://github.com/remarkablegames/wavedash-action/actions/workflows/lint.yml/badge.svg)](https://github.com/remarkablegames/wavedash-action/actions/workflows/lint.yml)
 
-〰️ Upload and publish your game files to Wavedash.
+〰️ Upload and publish your game files to [Wavedash](https://wavedash.com/).
 
 ## Quick Start
 
@@ -19,7 +19,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Wavedash Action
+      # Build your web game...
+
+      - name: Upload to Wavedash
         uses: remarkablemark/wavedash-action@v1
         with:
           token: ${{ secrets.WAVEDASH_TOKEN }}
@@ -27,19 +29,19 @@ jobs:
 
 ## Usage
 
-**Basic with a committed `wavedash.toml`:**
+If you have a `wavedash.toml`:
 
 ```yaml
-- name: Wavedash Action
+- name: Upload to Wavedash
   uses: remarkablemark/wavedash-action@v1
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
 ```
 
-**Auto-generate `wavedash.toml` and inject the Wavedash SDK:**
+If you don't have a `wavedash.toml`, then the action will create one for you and inject the Wavedash SDK into your entrypoint HTML:
 
 ```yaml
-- name: Wavedash Action
+- name: Upload to Wavedash
   uses: remarkablemark/wavedash-action@v1
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
@@ -49,18 +51,18 @@ jobs:
     sdk-version: 1.3.40
 ```
 
-**Upload and publish with release notes:**
+Upload and publish with release notes:
 
 ```yaml
-- name: Wavedash Action
+- name: Upload and publish to Wavedash
   uses: remarkablemark/wavedash-action@v1
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
     publish: true
-    version: 1.2.3
-    title: Version 1.2.3
-    summary: Bug fixes and polish
-    fixed: |
+    build-version: 1.2.3
+    publish-title: Version 1.2.3
+    publish-summary: Bug fixes and polish
+    publish-fixed: |
       Fixed fullscreen sizing
       Fixed input timing
 ```
@@ -81,7 +83,7 @@ See [action.yml](action.yml)
 
 ### `config`
 
-**Optional**. Path to `wavedash.toml`. Defaults to `./wavedash.toml`.
+**Optional**. Path to `wavedash.toml`. Defaults to `wavedash.toml`.
 
 ### `game-id`
 
@@ -103,19 +105,19 @@ See [action.yml](action.yml)
 
 **Optional**. Whether to publish the uploaded build. Defaults to `false`.
 
-### `version`
+### `build-version`
 
-**Optional**. Build version or message passed to `wavedash build push -m`. Defaults to `1.2.3`.
+**Optional**. Build version or message passed to `wavedash build push -m`.
 
-### `title`
+### `publish-title`
 
 **Optional**. Release title passed to `wavedash publish`.
 
-### `summary`
+### `publish-summary`
 
 **Optional**. Release summary passed to `wavedash publish`.
 
-### `added`, `removed`, `fixed`, `adjusted`
+### `publish-added`, `publish-removed`, `publish-fixed`, `publish-adjusted`
 
 **Optional**. Multiline lists of changelog items passed to `wavedash publish`. One item per line.
 
@@ -124,10 +126,10 @@ See [action.yml](action.yml)
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
     publish: true
-    added: |
+    publish-added: |
       New level
       New character
-    fixed: |
+    publish-fixed: |
       Fixed crash on startup
 ```
 
