@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Inject the Wavedash SDK script before the closing </body> tag."""
+"""Inject the Wavedash SDK modulepreload and script into the entrypoint HTML."""
 
 import re
 import sys
@@ -19,9 +19,13 @@ def main() -> None:
     if "@wvdsh/sdk-js" in html:
         return
 
+    sdk_url = f"https://esm.sh/@wvdsh/sdk-js@{version}"
+
+    preload_link = f'<link rel="modulepreload" href="{sdk_url}">'
+
     sdk_script = (
         f'<script type="module">'
-        f"import('https://esm.sh/@wvdsh/sdk-js@{version}').then"
+        f"import('{sdk_url}').then"
         f'(({{default:Wavedash}})=>{{'
         f'Wavedash.updateLoadProgressZeroToOne(1);'
         f'Wavedash.init();'
@@ -29,16 +33,24 @@ def main() -> None:
         f'</script>'
     )
 
-    new_html, count = re.subn(
-        r"(</body>)",
-        sdk_script + "\n" + r"\1",
+    new_html, head_count = re.subn(
+        r"(</head>)",
+        preload_link + "\n" + r"\1",
         html,
         count=1,
         flags=re.IGNORECASE,
     )
 
-    if count == 0:
-        new_html = html + sdk_script
+    new_html, body_count = re.subn(
+        r"(</body>)",
+        sdk_script + "\n" + r"\1",
+        new_html,
+        count=1,
+        flags=re.IGNORECASE,
+    )
+
+    if body_count == 0:
+        new_html = new_html + sdk_script
 
     with open(path, "w", encoding="utf-8") as f:
         f.write(new_html)

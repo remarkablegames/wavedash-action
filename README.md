@@ -170,7 +170,7 @@ You can commit this file to your repo or let the action create it by providing `
 
 ## SDK injection
 
-When the action auto-generates `wavedash.toml`, it also injects the Wavedash SDK script before the closing `</body>` tag of your entrypoint HTML. The script loads from `https://esm.sh/@wvdsh/sdk-js@<sdk-version>`.
+When the action auto-generates `wavedash.toml`, it also injects the Wavedash SDK into your entrypoint HTML. A `<link rel="modulepreload">` is added before the closing `</head>` tag to start fetching the module early, and the SDK script is added before the closing `</body>` tag to initialize Wavedash. The SDK loads from `https://esm.sh/@wvdsh/sdk-js@<sdk-version>`.
 
 ## License
 
