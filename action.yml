@@ -1,5 +1,5 @@
-name: github-actions-composite-template
-description: GitHub Actions Composite Template
+name: wavedash-action
+description: Upload and publish your game files to Wavedash
 author: remarkablemark
 
 inputs:
