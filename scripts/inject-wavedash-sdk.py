@@ -19,14 +19,15 @@ def main() -> None:
     if "@wvdsh/sdk-js" in html:
         return
 
-    sdk_script = f'''    <script type="module">
-        import('https://esm.sh/@wvdsh/sdk-js@{version}').then(
-          ({{ default: Wavedash }}) => {{
-            Wavedash.updateLoadProgressZeroToOne(1);
-            Wavedash.init();
-          }},
-        );
-    </script>'''
+    sdk_script = (
+        f'<script type="module">'
+        f"import('https://esm.sh/@wvdsh/sdk-js@{version}').then"
+        f'(({{default:Wavedash}})=>{{'
+        f'Wavedash.updateLoadProgressZeroToOne(1);'
+        f'Wavedash.init();'
+        f'}});'
+        f'</script>'
+    )
 
     new_html, count = re.subn(
         r"(</body>)",
