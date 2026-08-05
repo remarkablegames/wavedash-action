@@ -3,21 +3,202 @@ description: Upload and publish your game files to Wavedash
 author: remarkablemark
 
 inputs:
-  version:
-    description: Version
+  token:
+    description: Wavedash API token
+    required: true
+
+  config:
+    description: Path to wavedash.toml
     required: false
-    default: 1.2.3
+    default: wavedash.toml
+
+  game-id:
+    description: Game ID used to create wavedash.toml when it is missing
+    required: false
+
+  upload-dir:
+    description: Upload directory used when creating wavedash.toml
+    required: false
+    default: ./dist
+
+  entrypoint:
+    description: Entrypoint for wavedash.toml and SDK injection
+    required: false
+    default: index.html
+
+  sdk-version:
+    description: Wavedash SDK version to inject into the entrypoint HTML
+    required: false
+    default: 1.3.40
+
+  publish:
+    description: Whether to publish the uploaded build
+    required: false
+    default: "false"
+
+  build-version:
+    description: Build version or message passed to wavedash build push -m
+    required: false
+
+  publish-title:
+    description: Release title passed to wavedash publish
+    required: false
+
+  publish-summary:
+    description: Release summary passed to wavedash publish
+    required: false
+
+  publish-added:
+    description: Added changelog items passed to wavedash publish (one per line)
+    required: false
+
+  publish-removed:
+    description: Removed changelog items for wavedash publish (one per line)
+    required: false
+
+  publish-fixed:
+    description: Fixed changelog items for wavedash publish (one per line)
+    required: false
+
+  publish-adjusted:
+    description: Adjusted changelog items for wavedash publish (one per line)
+    required: false
+
+outputs:
+  build-id:
+    description: Build ID returned by wavedash build push
+    value: ${{ steps.upload.outputs.build-id }}
+
+  playtest-url:
+    description: Playtest URL returned by wavedash build push
+    value: ${{ steps.upload.outputs.playtest-url }}
+
+  published:
+    description: Whether the build was published
+    value: ${{ steps.publish.outputs.published }}
 
 runs:
   using: composite
   steps:
-    - name: Print version
+    - name: Install Wavedash CLI
       shell: bash
       run: |
-        echo "version: $VERSION"
+        curl -fsSL https://wavedash.com/cli/install.sh | sh
+        wavedash --version
+
+    - name: Create wavedash.toml
+      shell: bash
+      run: |
+        if [ ! -f "$CONFIG" ] && [ -n "$GAME_ID" ]; then
+          mkdir -p "$(dirname "$CONFIG")"
+          cat > "$CONFIG" << EOF
+        game_id = "$GAME_ID"
+        upload_dir = "$UPLOAD_DIR"
+        entrypoint = "$ENTRYPOINT"
+        EOF
+        fi
       env:
-        VERSION: ${{ inputs.version }}
+        CONFIG: ${{ inputs.config }}
+        GAME_ID: ${{ inputs.game-id }}
+        UPLOAD_DIR: ${{ inputs.upload-dir }}
+        ENTRYPOINT: ${{ inputs.entrypoint }}
+
+    - name: Inject Wavedash SDK
+      shell: bash
+      run: |
+        if [ ! -f "$CONFIG" ] || [ -z "$GAME_ID" ]; then
+          exit 0
+        fi
+
+        ENTRYPOINT_FILE="$UPLOAD_DIR/$ENTRYPOINT"
+        if [ ! -f "$ENTRYPOINT_FILE" ]; then
+          exit 0
+        fi
+
+        if grep -q "@wvdsh/sdk-js" "$ENTRYPOINT_FILE"; then
+          exit 0
+        fi
+
+        python3 "$GITHUB_ACTION_PATH/scripts/inject-wavedash-sdk.py" \
+          "$ENTRYPOINT_FILE" "$SDK_VERSION"
+      env:
+        CONFIG: ${{ inputs.config }}
+        GAME_ID: ${{ inputs.game-id }}
+        UPLOAD_DIR: ${{ inputs.upload-dir }}
+        ENTRYPOINT: ${{ inputs.entrypoint }}
+        SDK_VERSION: ${{ inputs.sdk-version }}
+
+    - name: Upload build
+      id: upload
+      shell: bash
+      run: |
+        MESSAGE_FLAG=()
+        [ -n "$BUILD_VERSION" ] && MESSAGE_FLAG=(-m "$BUILD_VERSION")
+
+        OUTPUT=$(wavedash build push \
+          --config "$CONFIG" "${MESSAGE_FLAG[@]}" 2>&1)
+        echo "$OUTPUT"
+
+        BUILD_ID=$(echo "$OUTPUT" | \
+          sed -n 's/.*Build ID: //p' | tr -d '[:space:]')
+        PLAYTEST_URL=$(echo "$OUTPUT" | \
+          sed -n 's/.*Play at: //p' | tr -d '[:space:]')
+
+        if [ -z "$BUILD_ID" ]; then
+          echo "Failed to extract Build ID from wavedash build push output" >&2
+          exit 1
+        fi
+
+        echo "build-id=$BUILD_ID" >> "$GITHUB_OUTPUT"
+        echo "playtest-url=$PLAYTEST_URL" >> "$GITHUB_OUTPUT"
+      env:
+        CONFIG: ${{ inputs.config }}
+        BUILD_VERSION: ${{ inputs.build-version }}
+        WAVEDASH_TOKEN: ${{ inputs.token }}
+
+    - name: Publish build
+      id: publish
+      shell: bash
+      run: |
+        if [ "$PUBLISH" != "true" ]; then
+          echo "published=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        ARGS=()
+        [ -n "$PUBLISH_TITLE" ] && ARGS+=(--title "$PUBLISH_TITLE")
+        [ -n "$PUBLISH_SUMMARY" ] && ARGS+=(--summary "$PUBLISH_SUMMARY")
+
+        while IFS= read -r line; do
+          [ -n "$line" ] && ARGS+=(--added "$line")
+        done <<< "$PUBLISH_ADDED"
+
+        while IFS= read -r line; do
+          [ -n "$line" ] && ARGS+=(--removed "$line")
+        done <<< "$PUBLISH_REMOVED"
+
+        while IFS= read -r line; do
+          [ -n "$line" ] && ARGS+=(--fixed "$line")
+        done <<< "$PUBLISH_FIXED"
+
+        while IFS= read -r line; do
+          [ -n "$line" ] && ARGS+=(--adjusted "$line")
+        done <<< "$PUBLISH_ADJUSTED"
+
+        wavedash publish "$BUILD_ID" --config "$CONFIG" "${ARGS[@]}"
+        echo "published=true" >> "$GITHUB_OUTPUT"
+      env:
+        CONFIG: ${{ inputs.config }}
+        PUBLISH: ${{ inputs.publish }}
+        PUBLISH_TITLE: ${{ inputs.publish-title }}
+        PUBLISH_SUMMARY: ${{ inputs.publish-summary }}
+        PUBLISH_ADDED: ${{ inputs.publish-added }}
+        PUBLISH_REMOVED: ${{ inputs.publish-removed }}
+        PUBLISH_FIXED: ${{ inputs.publish-fixed }}
+        PUBLISH_ADJUSTED: ${{ inputs.publish-adjusted }}
+        BUILD_ID: ${{ steps.upload.outputs.build-id }}
+        WAVEDASH_TOKEN: ${{ inputs.token }}
 
 branding:
-  icon: activity
-  color: white
+  icon: arrow-right-circle
+  color: gray-dark

@@ -1,0 +1,45 @@
+name: update-sdk-version
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Update SDK version
+        id: update
+        run: ./scripts/update-sdk-version.sh
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: >-
+            build(deps): bump @wvdsh/sdk-js from
+            ${{ steps.update.outputs.old-sdk-version }} to
+            ${{ steps.update.outputs.sdk-version }}
+
+            Release-As: ${{ steps.update.outputs.action-version }}
+          title: >-
+            build(deps): bump @wvdsh/sdk-js from
+            ${{ steps.update.outputs.old-sdk-version }} to
+            ${{ steps.update.outputs.sdk-version }}
+          body: >-
+            Bump the default Wavedash SDK version from
+            ${{ steps.update.outputs.old-sdk-version }} to
+            [${{ steps.update.outputs.sdk-version }}][sdk].
+
+            [sdk]: https://github.com/wvdsh/sdk-js/releases/tag/${{ steps.update.outputs.sdk-version }}
+          branch: build/bump-sdk-${{ steps.update.outputs.sdk-version }}
+          delete-branch: true
