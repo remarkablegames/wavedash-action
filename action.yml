@@ -224,5 +224,5 @@ runs:
         WAVEDASH_TOKEN: ${{ inputs.token }}
 
 branding:
-  icon: activity
-  color: white
+  icon: arrow-right-circle
+  color: gray-dark
