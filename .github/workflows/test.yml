@@ -3,6 +3,7 @@ on: [push, pull_request]
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   test:
@@ -62,6 +63,19 @@ jobs:
         run: |
           echo "build-id: ${{ steps.wavedash.outputs.build-id }}"
           echo "playtest-url: ${{ steps.wavedash.outputs.playtest-url }}"
+
+      - name: Comment build info on PR
+        if: steps.wavedash.outputs.build-id && github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "## Wavedash Build
+
+          | Field | Value |
+          | --- | --- |
+          | Build ID | ${{ steps.wavedash.outputs.build-id }} |
+          | Playtest URL | ${{ steps.wavedash.outputs.playtest-url }} |"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Verify SDK injection in entrypoint
         if: steps.wavedash.outputs.build-id
