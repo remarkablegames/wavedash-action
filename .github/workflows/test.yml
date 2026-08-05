@@ -27,6 +27,7 @@ jobs:
           game-id: ${{ secrets.WAVEDASH_GAME_ID }}
           upload-dir: ./test/dist
           entrypoint: index.html
+          build-version: ${{ github.sha }}
 
       - name: Verify build-id output
         if: steps.wavedash.outputs.build-id != ''
