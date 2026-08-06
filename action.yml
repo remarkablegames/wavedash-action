@@ -36,8 +36,8 @@ inputs:
     required: false
     default: "false"
 
-  build-version:
-    description: Build version or message passed to wavedash build push -m
+  build-message:
+    description: Build message passed to wavedash build push -m
     required: false
 
   publish-title:
@@ -133,7 +133,7 @@ runs:
       shell: bash
       run: |
         MESSAGE_FLAG=()
-        [ -n "$BUILD_VERSION" ] && MESSAGE_FLAG=(-m "$BUILD_VERSION")
+        [ -n "$BUILD_MESSAGE" ] && MESSAGE_FLAG=(-m "$BUILD_MESSAGE")
 
         OUTPUT=$(wavedash build push \
           --config "$CONFIG" "${MESSAGE_FLAG[@]}" 2>&1)
@@ -153,7 +153,7 @@ runs:
         echo "playtest-url=$PLAYTEST_URL" >> "$GITHUB_OUTPUT"
       env:
         CONFIG: ${{ inputs.config }}
-        BUILD_VERSION: ${{ inputs.build-version }}
+        BUILD_MESSAGE: ${{ inputs.build-message }}
         WAVEDASH_TOKEN: ${{ inputs.token }}
 
     - name: Publish build
