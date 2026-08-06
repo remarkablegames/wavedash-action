@@ -59,7 +59,7 @@ Upload and publish with release notes:
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
     publish: true
-    build-version: 1.2.3
+    build-message: Bug fixes and polish
     publish-title: Version 1.2.3
     publish-summary: Bug fixes and polish
     publish-fixed: |
@@ -105,9 +105,9 @@ See [action.yml](action.yml)
 
 **Optional**. Whether to publish the uploaded build. Defaults to `false`.
 
-### `build-version`
+### `build-message`
 
-**Optional**. Build version or message passed to `wavedash build push -m`.
+**Optional**. Build message passed to `wavedash build push -m`.
 
 ### `publish-title`
 
