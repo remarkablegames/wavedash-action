@@ -22,7 +22,7 @@ jobs:
       # Build your web game...
 
       - name: Upload to Wavedash
-        uses: remarkablemark/wavedash-action@v1
+        uses: remarkablegames/wavedash-action@v1
         with:
           token: ${{ secrets.WAVEDASH_TOKEN }}
 ```
@@ -33,7 +33,7 @@ If you have a `wavedash.toml`:
 
 ```yaml
 - name: Upload to Wavedash
-  uses: remarkablemark/wavedash-action@v1
+  uses: remarkablegames/wavedash-action@v1
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
 ```
@@ -42,7 +42,7 @@ If you don't have a `wavedash.toml`, then the action will create one for you and
 
 ```yaml
 - name: Upload to Wavedash
-  uses: remarkablemark/wavedash-action@v1
+  uses: remarkablegames/wavedash-action@v1
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
     game-id: ${{ secrets.WAVEDASH_GAME_ID }}
@@ -55,7 +55,7 @@ Upload and publish with release notes:
 
 ```yaml
 - name: Upload and publish to Wavedash
-  uses: remarkablemark/wavedash-action@v1
+  uses: remarkablegames/wavedash-action@v1
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
     publish: true
@@ -76,7 +76,7 @@ See [action.yml](action.yml)
 **Required**. Your Wavedash API token. Store it as a repository secret (e.g., `WAVEDASH_TOKEN`).
 
 ```yaml
-- uses: remarkablemark/wavedash-action@v1
+- uses: remarkablegames/wavedash-action@v1
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
 ```
@@ -122,7 +122,7 @@ See [action.yml](action.yml)
 **Optional**. Multiline lists of changelog items passed to `wavedash publish`. One item per line.
 
 ```yaml
-- uses: remarkablemark/wavedash-action@v1
+- uses: remarkablegames/wavedash-action@v1
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
     publish: true
@@ -140,7 +140,7 @@ See [action.yml](action.yml)
 The build ID returned by `wavedash build push`.
 
 ```yaml
-- uses: remarkablemark/wavedash-action@v1
+- uses: remarkablegames/wavedash-action@v1
   id: wavedash
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
