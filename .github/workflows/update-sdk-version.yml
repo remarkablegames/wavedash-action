@@ -36,10 +36,8 @@ jobs:
             ${{ steps.update.outputs.old-sdk-version }} to
             ${{ steps.update.outputs.sdk-version }}
           body: >-
-            Bump the default Wavedash SDK version from
+            Bump the Wavedash SDK version from
             ${{ steps.update.outputs.old-sdk-version }} to
-            [${{ steps.update.outputs.sdk-version }}][sdk].
-
-            [sdk]: https://github.com/wvdsh/sdk-js/releases/tag/${{ steps.update.outputs.sdk-version }}
+            [${{ steps.update.outputs.sdk-version }}][https://github.com/wvdsh/sdk-js/releases/tag/${{ steps.update.outputs.sdk-version }}]
           branch: build/bump-sdk-${{ steps.update.outputs.sdk-version }}
           delete-branch: true
