@@ -25,10 +25,8 @@ jobs:
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: >-
-            build(deps): bump @wvdsh/sdk-js from
-            ${{ steps.update.outputs.old-sdk-version }} to
-            ${{ steps.update.outputs.sdk-version }}
+          commit-message: |
+            build(deps): bump @wvdsh/sdk-js from ${{ steps.update.outputs.old-sdk-version }} to ${{ steps.update.outputs.sdk-version }}
 
             Release-As: ${{ steps.update.outputs.action-version }}
           title: >-
