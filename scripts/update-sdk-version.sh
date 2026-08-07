@@ -64,9 +64,6 @@ for path in ("action.yml", "README.md"):
         with open(path, "w", encoding="utf-8") as f:
             f.write(updated)
 
-with open("version.txt", "w", encoding="utf-8") as f:
-    f.write(new_action_version + "\n")
-
 print(f"SDK: {old_sdk} -> {new_sdk}")
 print(f"Action: {new_action_version}")
 PY
