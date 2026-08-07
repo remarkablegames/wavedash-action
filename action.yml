@@ -29,7 +29,7 @@ inputs:
   sdk-version:
     description: Wavedash SDK version to inject into the entrypoint HTML
     required: false
-    default: 1.3.40
+    default: 1.3.41
 
   publish:
     description: Whether to publish the uploaded build
