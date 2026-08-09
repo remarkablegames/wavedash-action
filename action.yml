@@ -31,10 +31,15 @@ inputs:
     required: false
     default: 1.3.43
 
+  cache:
+    description: Whether to cache the installed Wavedash CLI between runs
+    required: false
+    default: true
+
   publish:
     description: Whether to publish the uploaded build
     required: false
-    default: "false"
+    default: false
 
   build-message:
     description: Build message passed to wavedash build push -m
@@ -80,11 +85,44 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Install Wavedash CLI
+    - name: Resolve Wavedash CLI install script
+      id: cli-install-script
       shell: bash
       run: |
-        curl -fsSL https://wavedash.com/cli/install.sh | sh
-        wavedash --version
+        SCRIPT="$RUNNER_TEMP/wavedash-cli-install.sh"
+        curl -fsSL https://wavedash.com/cli/install.sh -o "$SCRIPT"
+        VERSION=$(grep -m1 '^APP_VERSION=' "$SCRIPT" | cut -d '"' -f2)
+        echo "script=$SCRIPT" >> "$GITHUB_OUTPUT"
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "install-prefix=$HOME/.wavedash-cli" >> "$GITHUB_OUTPUT"
+        echo "install-dir=$HOME/.wavedash-cli/bin" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Wavedash CLI
+      id: cli-cache
+      if: inputs.cache == 'true'
+      uses: actions/cache@v6
+      with:
+        path: ${{ steps.cli-install-script.outputs.install-dir }}
+        key: wavedash-cli-${{ runner.os }}-${{ steps.cli-install-script.outputs.version }}
+
+    - name: Install Wavedash CLI
+      if: steps.cli-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: sh "$INSTALL_SCRIPT"
+      env:
+        INSTALL_SCRIPT: ${{ steps.cli-install-script.outputs.script }}
+        WAVEDASH_INSTALL_DIR: ${{ steps.cli-install-script.outputs.install-prefix }}
+
+    - name: Add cached Wavedash CLI to PATH
+      if: steps.cli-cache.outputs.cache-hit == 'true'
+      shell: bash
+      run: echo "$INSTALL_DIR" >> "$GITHUB_PATH"
+      env:
+        INSTALL_DIR: ${{ steps.cli-install-script.outputs.install-dir }}
+
+    - name: Verify Wavedash CLI
+      shell: bash
+      run: wavedash --version
 
     - name: Create wavedash.toml
       shell: bash
