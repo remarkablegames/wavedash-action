@@ -116,9 +116,7 @@ runs:
     - name: Add cached Wavedash CLI to PATH
       if: steps.cli-cache.outputs.cache-hit == 'true'
       shell: bash
-      run: echo "$INSTALL_DIR" >> "$GITHUB_PATH"
-      env:
-        INSTALL_DIR: ${{ steps.cli-install-script.outputs.install-dir }}
+      run: echo "$HOME/.wavedash-cli/bin" >> "$GITHUB_PATH"
 
     - name: Verify Wavedash CLI
       shell: bash
