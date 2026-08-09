@@ -29,13 +29,9 @@ jobs:
             build(deps): bump @wvdsh/sdk-js from ${{ steps.update.outputs.old-sdk-version }} to ${{ steps.update.outputs.sdk-version }}
 
             Release-As: ${{ steps.update.outputs.action-version }}
-          title: >-
-            build(deps): bump @wvdsh/sdk-js from
-            ${{ steps.update.outputs.old-sdk-version }} to
-            ${{ steps.update.outputs.sdk-version }}
-          body: >-
-            Bump the Wavedash SDK version from
-            ${{ steps.update.outputs.old-sdk-version }} to
-            [${{ steps.update.outputs.sdk-version }}](https://github.com/wvdsh/sdk-js/releases/tag/${{ steps.update.outputs.sdk-version }})
+          title: |
+            build(deps): bump @wvdsh/sdk-js from ${{ steps.update.outputs.old-sdk-version }} to ${{ steps.update.outputs.sdk-version }}
+          body: |
+            Bump the Wavedash SDK version from ${{ steps.update.outputs.old-sdk-version }} to [${{ steps.update.outputs.sdk-version }}](https://github.com/wvdsh/sdk-js/releases/tag/${{ steps.update.outputs.sdk-version }})
           branch: build/bump-sdk-${{ steps.update.outputs.sdk-version }}
           delete-branch: true
