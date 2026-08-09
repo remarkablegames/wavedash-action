@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/remarkablegames/wavedash-action/compare/v1.0.4...v1.1.0) (2026-08-09)
+
+
+### Features
+
+* **action:** add optional cache input for wavedash CLI install ([#12](https://github.com/remarkablegames/wavedash-action/issues/12)) ([8ba13c9](https://github.com/remarkablegames/wavedash-action/commit/8ba13c9c6c66e085c92214e2308556876e01f5ee))
+
 ## [1.0.4](https://github.com/remarkablegames/wavedash-action/compare/v1.0.3...v1.0.4) (2026-08-08)
 
 
