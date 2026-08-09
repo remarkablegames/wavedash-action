@@ -46,6 +46,20 @@ jobs:
 
           echo "SDK injection tests passed"
 
+      - name: Test Wavedash CLI version parsing
+        shell: bash
+        run: |
+          SCRIPT="$RUNNER_TEMP/wavedash-cli-install.sh"
+          curl -fsSL https://wavedash.com/cli/install.sh -o "$SCRIPT"
+          VERSION=$(grep -m1 '^APP_VERSION=' "$SCRIPT" | cut -d '"' -f2)
+
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "FAIL: could not parse a semver APP_VERSION from install script (got: '$VERSION')" >&2
+            exit 1
+          fi
+
+          echo "Resolved Wavedash CLI version: $VERSION"
+
       - name: Run action
         if: env.WAVEDASH_TOKEN != '' && env.WAVEDASH_GAME_ID != ''
         id: wavedash
