@@ -101,6 +101,10 @@ See [action.yml](action.yml)
 
 **Optional**. Wavedash SDK version injected into the entrypoint HTML when auto-creating `wavedash.toml`. Defaults to `1.3.43`.
 
+### `cache`
+
+**Optional**. Whether to cache the installed Wavedash CLI between runs, keyed by runner OS and CLI version. Defaults to `true`.
+
 ### `publish`
 
 **Optional**. Whether to publish the uploaded build. Defaults to `false`.
