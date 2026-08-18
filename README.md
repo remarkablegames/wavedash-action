@@ -48,7 +48,7 @@ If you don't have a `wavedash.toml`, then the action will create one for you and
     game-id: ${{ secrets.WAVEDASH_GAME_ID }}
     upload-dir: ./dist
     entrypoint: index.html
-    sdk-version: 1.3.43
+    sdk-version: 1.3.44
 ```
 
 Upload and publish with release notes:
@@ -99,7 +99,7 @@ See [action.yml](action.yml)
 
 ### `sdk-version`
 
-**Optional**. Wavedash SDK version injected into the entrypoint HTML when auto-creating `wavedash.toml`. Defaults to `1.3.43`.
+**Optional**. Wavedash SDK version injected into the entrypoint HTML when auto-creating `wavedash.toml`. Defaults to `1.3.44`.
 
 ### `cache`
 
