@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.8](https://github.com/remarkablegames/wavedash-action/compare/v1.1.7...v1.1.8) (2026-10-01)
+
+
+### Build System
+
+* **deps:** bump @wvdsh/sdk-js from 1.3.53 to 1.3.54 ([#28](https://github.com/remarkablegames/wavedash-action/issues/28)) ([224ed6c](https://github.com/remarkablegames/wavedash-action/commit/224ed6cc523517b574fdbd061c0d540cea0d1d42))
+
 ## [1.1.7](https://github.com/remarkablegames/wavedash-action/compare/v1.1.6...v1.1.7) (2026-09-22)
 
 
