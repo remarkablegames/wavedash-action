@@ -11,7 +11,7 @@
 ```yaml
 on: push
 jobs:
-  wavedash-action:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -22,7 +22,7 @@ jobs:
       # Build your web game...
 
       - name: Upload to Wavedash
-        uses: remarkablegames/wavedash-action@v1
+        uses: remarkablegames/wavedash-action@v2
         with:
           token: ${{ secrets.WAVEDASH_TOKEN }}
 ```
@@ -33,29 +33,30 @@ If you have a `wavedash.toml`:
 
 ```yaml
 - name: Upload to Wavedash
-  uses: remarkablegames/wavedash-action@v1
+  uses: remarkablegames/wavedash-action@v2
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
 ```
 
-If you don't have a `wavedash.toml`, then the action will create one for you and inject the Wavedash SDK into your entrypoint HTML:
+If you don't have a `wavedash.toml`:
 
 ```yaml
 - name: Upload to Wavedash
-  uses: remarkablegames/wavedash-action@v1
+  uses: remarkablegames/wavedash-action@v2
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
     game-id: ${{ secrets.WAVEDASH_GAME_ID }}
     upload-dir: ./dist
     entrypoint: index.html
-    sdk-version: 1.3.54
 ```
+
+> The action will create the config and inject the Wavedash init script into your entrypoint.
 
 Upload and publish with release notes:
 
 ```yaml
 - name: Upload and publish to Wavedash
-  uses: remarkablegames/wavedash-action@v1
+  uses: remarkablegames/wavedash-action@v2
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
     publish: true
@@ -76,7 +77,7 @@ See [action.yml](action.yml)
 **Required**. Your Wavedash API token. Store it as a repository secret (e.g., `WAVEDASH_TOKEN`).
 
 ```yaml
-- uses: remarkablegames/wavedash-action@v1
+- uses: remarkablegames/wavedash-action@v2
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
 ```
@@ -87,23 +88,30 @@ See [action.yml](action.yml)
 
 ### `game-id`
 
-**Optional**. Game ID used to create `wavedash.toml` when the config file does not exist. If `game-id` is provided and `config` is missing, the action writes the config file for you.
+**Optional**. Game ID from the Developer Portal. If `game-id` is provided and `config` is missing, the action creates `wavedash.toml` for you.
 
 ### `upload-dir`
 
-**Optional**. Upload directory used when creating `wavedash.toml`. Defaults to `./dist`.
+**Optional**. Path to your built game files. Defaults to `./dist`.
 
 ### `entrypoint`
 
-**Optional**. Entrypoint used when creating `wavedash.toml` and when injecting the Wavedash SDK. Defaults to `index.html`.
+**Optional**. The first file Wavedash loads inside `upload-dir`. Defaults to `index.html`.
 
-### `sdk-version`
+### `inject-init`
 
-**Optional**. Wavedash SDK version injected into the entrypoint HTML when auto-creating `wavedash.toml`. Defaults to `1.3.54`.
+**Optional**. Whether to inject the Wavedash init script. Defaults to `true`. Set to `false` if your game calls `Wavedash.init()`:
+
+```yaml
+- uses: remarkablegames/wavedash-action@v2
+  with:
+    token: ${{ secrets.WAVEDASH_TOKEN }}
+    inject-init: false
+```
 
 ### `cache`
 
-**Optional**. Whether to cache the installed Wavedash CLI between runs, keyed by runner OS and CLI version. Defaults to `true`.
+**Optional**. Whether to cache the Wavedash CLI. Defaults to `true`.
 
 ### `publish`
 
@@ -123,10 +131,10 @@ See [action.yml](action.yml)
 
 ### `publish-added`, `publish-removed`, `publish-fixed`, `publish-adjusted`
 
-**Optional**. Multiline lists of changelog items passed to `wavedash publish`. One item per line.
+**Optional**. Multiline lists of changelog items passed to `wavedash publish`:
 
 ```yaml
-- uses: remarkablegames/wavedash-action@v1
+- uses: remarkablegames/wavedash-action@v2
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
     publish: true
@@ -141,10 +149,10 @@ See [action.yml](action.yml)
 
 ### `build-id`
 
-The build ID returned by `wavedash build push`.
+Build ID returned by `wavedash build push`.
 
 ```yaml
-- uses: remarkablegames/wavedash-action@v1
+- uses: remarkablegames/wavedash-action@v2
   id: wavedash
   with:
     token: ${{ secrets.WAVEDASH_TOKEN }}
@@ -154,7 +162,7 @@ The build ID returned by `wavedash build push`.
 
 ### `playtest-url`
 
-The playtest URL returned by `wavedash build push`.
+Playtest URL returned by `wavedash build push`.
 
 ### `published`
 
@@ -162,7 +170,7 @@ The playtest URL returned by `wavedash build push`.
 
 ## `wavedash.toml`
 
-Wavedash uses a `wavedash.toml` file to know which game to upload and where the built files are.
+Wavedash uses a [config](https://docs.wavedash.com/cli/configuration) file to know which game to upload and where the built files are:
 
 ```toml
 game_id = "YOUR_GAME_ID_HERE"
@@ -170,11 +178,42 @@ upload_dir = "./dist"
 entrypoint = "index.html"
 ```
 
-You can commit this file to your repo or let the action create it by providing `game-id`, `upload-dir`, and `entrypoint`.
+> When your `wavedash.toml` has `upload_dir` or `entrypoint`, those values are used. The action inputs `upload-dir` and `entrypoint` only apply when the key is missing.
 
-## SDK injection
+## Wavedash init
 
-When the action auto-generates `wavedash.toml`, it also injects the Wavedash SDK into your entrypoint HTML. A `<link rel="modulepreload">` is added before the closing `</head>` tag to start fetching the module early, and the SDK script is added before the closing `</body>` tag to initialize Wavedash. The SDK loads from `https://esm.sh/@wvdsh/sdk-js@<sdk-version>`.
+`window.Wavedash` is available before your game starts so the action injects a script into your entrypoint:
+
+```javascript
+window.Wavedash&&(Wavedash.updateLoadProgressZeroToOne(1),Wavedash.init());
+```
+
+If `Wavedash.init()` isn't called, your game is blocked behind a loading screen. To update the load progress, set [`inject-init`](#inject-init) to `false` and call:
+
+```javascript
+Wavedash.updateLoadProgressZeroToOne(0);
+// load assets...
+Wavedash.updateLoadProgressZeroToOne(1);
+Wavedash.init();
+```
+
+> Injection is skipped when `Wavedash.init()` appears in your upload directory. The `entrypoint` must be an HTML or JavaScript file, otherwise the action fails.
+
+## Migration
+
+### v2
+
+v2 removes the `sdk-version` input and stops downloading `@wvdsh/sdk-js`:
+
+```diff
+- uses: remarkablegames/wavedash-action@v1
++ uses: remarkablegames/wavedash-action@v2
+  with:
+    token: ${{ secrets.WAVEDASH_TOKEN }}
+-   sdk-version: 1.3.54
+```
+
+The action now injects `window.Wavedash.init()` and adds the [`inject-init`](#inject-init) input.
 
 ## License
 

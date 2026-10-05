@@ -1,0 +1,2 @@
+# This action uses tomllib, so Python 3.11+ is required.
+target-version = "py311"
