@@ -19,32 +19,153 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Test SDK injection
+      - name: Test Wavedash init injection
         shell: bash
         run: |
-          HTML='<!DOCTYPE html><html><head><title>Test</title></head><body><h1>Hello</h1></body></html>'
-          TEST_FILE="$RUNNER_TEMP/test_inject.html"
-          echo "$HTML" > "$TEST_FILE"
-          python3 "${{ github.workspace }}/scripts/inject-wavedash-sdk.py" "$TEST_FILE" 1.3.40
+          INJECT="${{ github.workspace }}/scripts/inject-wavedash-init.py"
+          WORK="$RUNNER_TEMP/inject"
+          rm -rf "$WORK" && mkdir -p "$WORK"
+          echo '<!DOCTYPE html><html><head><title>Test</title></head><body><h1>Hello</h1></body></html>' > "$WORK/index.html"
 
-          if ! grep -q 'modulepreload' "$TEST_FILE"; then
-            echo "FAIL: modulepreload link not injected" >&2
-            exit 1
-          fi
-          if ! grep -q 'type="module"' "$TEST_FILE"; then
-            echo "FAIL: SDK script not injected" >&2
+          python3 "$INJECT" "$WORK" index.html
+
+          if ! grep -qF 'Wavedash.init()' "$WORK/index.html"; then
+            echo "FAIL: Wavedash init script not injected" >&2
             exit 1
           fi
 
-          BEFORE=$(wc -c < "$TEST_FILE")
-          python3 "${{ github.workspace }}/scripts/inject-wavedash-sdk.py" "$TEST_FILE" 1.3.40
-          AFTER=$(wc -c < "$TEST_FILE")
+          BEFORE=$(wc -c < "$WORK/index.html")
+          python3 "$INJECT" "$WORK" index.html
+          AFTER=$(wc -c < "$WORK/index.html")
           if [ "$BEFORE" != "$AFTER" ]; then
             echo "FAIL: injection is not idempotent" >&2
             exit 1
           fi
 
-          echo "SDK injection tests passed"
+          echo "Wavedash init injection tests passed"
+
+      - name: Test Wavedash init injection is skipped
+        shell: bash
+        run: |
+          INJECT="${{ github.workspace }}/scripts/inject-wavedash-init.py"
+
+          WORK="$RUNNER_TEMP/skip-entrypoint"
+          rm -rf "$WORK" && mkdir -p "$WORK"
+          echo '<html><body><script>Wavedash.init();</script></body></html>' > "$WORK/index.html"
+
+          python3 "$INJECT" "$WORK" index.html
+
+          if grep -qF 'window.Wavedash&&' "$WORK/index.html"; then
+            echo "FAIL: injected despite init() in the entrypoint" >&2
+            exit 1
+          fi
+
+          WORK="$RUNNER_TEMP/skip-script"
+          rm -rf "$WORK" && mkdir -p "$WORK/assets"
+          echo '<html><body><script src="./assets/main.js"></script></body></html>' > "$WORK/index.html"
+          echo 'Wavedash.init();' > "$WORK/assets/main.js"
+
+          python3 "$INJECT" "$WORK" index.html
+
+          if grep -qF 'window.Wavedash&&' "$WORK/index.html"; then
+            echo "FAIL: injected despite init() in a separate script" >&2
+            exit 1
+          fi
+
+          WORK="$RUNNER_TEMP/skip-missing"
+          rm -rf "$WORK" && mkdir -p "$WORK"
+
+          python3 "$INJECT" "$WORK" index.html || { echo "FAIL: missing entrypoint should exit 0" >&2; exit 1; }
+
+          # init() with a config argument, as the Wavedash docs recommend
+          WORK="$RUNNER_TEMP/skip-config"
+          rm -rf "$WORK" && mkdir -p "$WORK"
+          echo '<html><body><script src="./main.js"></script></body></html>' > "$WORK/index.html"
+          echo 'Wavedash.init({ debug: true });' > "$WORK/main.js"
+
+          python3 "$INJECT" "$WORK" index.html
+
+          if grep -qF 'window.Wavedash&&' "$WORK/index.html"; then
+            echo "FAIL: injected despite init() with a config argument" >&2
+            exit 1
+          fi
+
+          # a JavaScript entrypoint gets a call, not a <script> tag
+          WORK="$RUNNER_TEMP/js-entrypoint"
+          rm -rf "$WORK" && mkdir -p "$WORK"
+          printf 'startGame();\n' > "$WORK/main.js"
+
+          python3 "$INJECT" "$WORK" main.js
+
+          if ! grep -qF 'window.Wavedash&&' "$WORK/main.js"; then
+            echo "FAIL: Wavedash init call not appended to JavaScript entrypoint" >&2
+            exit 1
+          fi
+          if grep -qF '<script>' "$WORK/main.js"; then
+            echo "FAIL: injected an HTML script tag into JavaScript" >&2
+            exit 1
+          fi
+
+          # any other extension is an error, not a silent skip
+          WORK="$RUNNER_TEMP/bad-entrypoint"
+          rm -rf "$WORK" && mkdir -p "$WORK"
+          echo 'nope' > "$WORK/game.txt"
+
+          if python3 "$INJECT" "$WORK" game.txt; then
+            echo "FAIL: unsupported entrypoint should exit non-zero" >&2
+            exit 1
+          fi
+
+          echo "Wavedash init skip tests passed"
+
+      - name: Test wavedash.toml resolution
+        shell: bash
+        run: |
+          RESOLVE="${{ github.workspace }}/scripts/resolve-wavedash-config.py"
+          WORK="$RUNNER_TEMP/resolve"
+          rm -rf "$WORK" && mkdir -p "$WORK"
+          export GITHUB_OUTPUT="$WORK/output"
+
+          # the config wins over the inputs, including a quoted comment and
+          # single-quoted literals that a sed extraction would mangle
+          {
+            echo 'game_id = "abc"'
+            echo 'upload_dir = "./build" # not "dist"'
+            echo "entrypoint = 'app.html'"
+          } > "$WORK/wavedash.toml"
+
+          python3 "$RESOLVE" "$WORK/wavedash.toml" ./dist index.html
+
+          grep -qF 'upload-dir=./build' "$GITHUB_OUTPUT" || { echo "FAIL: upload_dir not read from config" >&2; exit 1; }
+          grep -qF 'entrypoint=app.html' "$GITHUB_OUTPUT" || { echo "FAIL: entrypoint not read from config" >&2; exit 1; }
+
+          # a blank key means unset, so the inputs win
+          : > "$GITHUB_OUTPUT"
+          printf 'game_id = "abc"\nupload_dir = ""\n' > "$WORK/wavedash.toml"
+
+          python3 "$RESOLVE" "$WORK/wavedash.toml" ./dist index.html
+
+          grep -qF 'upload-dir=./dist' "$GITHUB_OUTPUT" || { echo "FAIL: blank upload_dir should fall back" >&2; exit 1; }
+          grep -qF 'entrypoint=index.html' "$GITHUB_OUTPUT" || { echo "FAIL: missing entrypoint should fall back" >&2; exit 1; }
+
+          # a missing config falls back without failing
+          : > "$GITHUB_OUTPUT"
+
+          python3 "$RESOLVE" "$WORK/absent.toml" ./dist index.html \
+            || { echo "FAIL: missing config should exit 0" >&2; exit 1; }
+
+          grep -qF 'upload-dir=./dist' "$GITHUB_OUTPUT" || { echo "FAIL: missing config should fall back" >&2; exit 1; }
+
+          # a malformed config warns and falls back rather than failing the build
+          : > "$GITHUB_OUTPUT"
+          printf 'upload_dir = "./dist\n' > "$WORK/broken.toml"
+
+          python3 "$RESOLVE" "$WORK/broken.toml" ./dist index.html \
+            || { echo "FAIL: malformed config should exit 0" >&2; exit 1; }
+
+          grep -qF 'upload-dir=./dist' "$GITHUB_OUTPUT" || { echo "FAIL: malformed config should fall back" >&2; exit 1; }
+
+          echo "wavedash.toml resolution tests passed"
 
       - name: Run action
         if: env.WAVEDASH_TOKEN != '' && env.WAVEDASH_GAME_ID != ''
@@ -77,17 +198,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
-      - name: Verify SDK injection in entrypoint
+      - name: Verify Wavedash init injection in entrypoint
         if: steps.wavedash.outputs.build-id
         shell: bash
         run: |
           ENTRYPOINT="./test/dist/index.html"
-          if ! grep -q 'modulepreload' "$ENTRYPOINT"; then
-            echo "FAIL: modulepreload link not found in entrypoint" >&2
+
+          if ! grep -qF 'Wavedash.init()' "$ENTRYPOINT"; then
+            echo "FAIL: Wavedash init script not found in entrypoint" >&2
             exit 1
           fi
-          if ! grep -q 'type="module"' "$ENTRYPOINT"; then
-            echo "FAIL: SDK script not found in entrypoint" >&2
-            exit 1
-          fi
-          echo "SDK injection verified in entrypoint"
+
+          echo "Wavedash init injection verified in entrypoint"
