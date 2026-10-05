@@ -1,99 +1,95 @@
 # Changelog
 
-## [1.1.8](https://github.com/remarkablegames/wavedash-action/compare/v1.1.7...v1.1.8) (2026-10-01)
+## [2.0.0](https://github.com/remarkablegames/wavedash-action/compare/v1.1.8...v2.0.0) (2026-10-05)
 
+### ⚠ BREAKING CHANGES
+
+- **action:** removed `sdk-version` input and replaced with script.
+
+### Features
+
+- **action:** remove sdk and replace with script ([0f2877c](https://github.com/remarkablegames/wavedash-action/commit/0f2877c103001dcfb55302c6d21b59349279e131))
+
+## [1.1.8](https://github.com/remarkablegames/wavedash-action/compare/v1.1.7...v1.1.8) (2026-10-01)
 
 ### Build System
 
-* **deps:** bump @wvdsh/sdk-js from 1.3.53 to 1.3.54 ([#28](https://github.com/remarkablegames/wavedash-action/issues/28)) ([224ed6c](https://github.com/remarkablegames/wavedash-action/commit/224ed6cc523517b574fdbd061c0d540cea0d1d42))
+- **deps:** bump @wvdsh/sdk-js from 1.3.53 to 1.3.54 ([#28](https://github.com/remarkablegames/wavedash-action/issues/28)) ([224ed6c](https://github.com/remarkablegames/wavedash-action/commit/224ed6cc523517b574fdbd061c0d540cea0d1d42))
 
 ## [1.1.7](https://github.com/remarkablegames/wavedash-action/compare/v1.1.6...v1.1.7) (2026-09-22)
 
-
 ### Build System
 
-* **deps:** bump @wvdsh/sdk-js from 1.3.52 to 1.3.53 ([#26](https://github.com/remarkablegames/wavedash-action/issues/26)) ([a6f41b2](https://github.com/remarkablegames/wavedash-action/commit/a6f41b2d2291885e65ca920b30e77ab0c56a5fbb))
+- **deps:** bump @wvdsh/sdk-js from 1.3.52 to 1.3.53 ([#26](https://github.com/remarkablegames/wavedash-action/issues/26)) ([a6f41b2](https://github.com/remarkablegames/wavedash-action/commit/a6f41b2d2291885e65ca920b30e77ab0c56a5fbb))
 
 ## [1.1.6](https://github.com/remarkablegames/wavedash-action/compare/v1.1.5...v1.1.6) (2026-09-21)
 
-
 ### Build System
 
-* **deps:** bump @wvdsh/sdk-js from 1.3.50 to 1.3.52 ([#24](https://github.com/remarkablegames/wavedash-action/issues/24)) ([571513a](https://github.com/remarkablegames/wavedash-action/commit/571513a70f59c0fbe089557e50aad185351f8c38))
+- **deps:** bump @wvdsh/sdk-js from 1.3.50 to 1.3.52 ([#24](https://github.com/remarkablegames/wavedash-action/issues/24)) ([571513a](https://github.com/remarkablegames/wavedash-action/commit/571513a70f59c0fbe089557e50aad185351f8c38))
 
 ## [1.1.5](https://github.com/remarkablegames/wavedash-action/compare/v1.1.4...v1.1.5) (2026-09-16)
 
-
 ### Build System
 
-* **deps:** bump @wvdsh/sdk-js from 1.3.48 to 1.3.50 ([#22](https://github.com/remarkablegames/wavedash-action/issues/22)) ([eb8e24b](https://github.com/remarkablegames/wavedash-action/commit/eb8e24bd6c69ad12b5cc99df1576f41556beb1ed))
+- **deps:** bump @wvdsh/sdk-js from 1.3.48 to 1.3.50 ([#22](https://github.com/remarkablegames/wavedash-action/issues/22)) ([eb8e24b](https://github.com/remarkablegames/wavedash-action/commit/eb8e24bd6c69ad12b5cc99df1576f41556beb1ed))
 
 ## [1.1.4](https://github.com/remarkablegames/wavedash-action/compare/v1.1.3...v1.1.4) (2026-09-04)
 
-
 ### Build System
 
-* **deps:** bump @wvdsh/sdk-js from 1.3.46 to 1.3.48 ([#20](https://github.com/remarkablegames/wavedash-action/issues/20)) ([ca6944b](https://github.com/remarkablegames/wavedash-action/commit/ca6944bf6583f187576e4160b20141d950c4eaa2))
+- **deps:** bump @wvdsh/sdk-js from 1.3.46 to 1.3.48 ([#20](https://github.com/remarkablegames/wavedash-action/issues/20)) ([ca6944b](https://github.com/remarkablegames/wavedash-action/commit/ca6944bf6583f187576e4160b20141d950c4eaa2))
 
 ## [1.1.3](https://github.com/remarkablegames/wavedash-action/compare/v1.1.2...v1.1.3) (2026-09-02)
 
-
 ### Build System
 
-* **deps:** bump @wvdsh/sdk-js from 1.3.45 to 1.3.46 ([#18](https://github.com/remarkablegames/wavedash-action/issues/18)) ([165b2d5](https://github.com/remarkablegames/wavedash-action/commit/165b2d50e7c50efb232fe8c4da13c17591920d1c))
+- **deps:** bump @wvdsh/sdk-js from 1.3.45 to 1.3.46 ([#18](https://github.com/remarkablegames/wavedash-action/issues/18)) ([165b2d5](https://github.com/remarkablegames/wavedash-action/commit/165b2d50e7c50efb232fe8c4da13c17591920d1c))
 
 ## [1.1.2](https://github.com/remarkablegames/wavedash-action/compare/v1.1.1...v1.1.2) (2026-08-20)
 
-
 ### Build System
 
-* **deps:** bump @wvdsh/sdk-js from 1.3.44 to 1.3.45 ([#16](https://github.com/remarkablegames/wavedash-action/issues/16)) ([de24dca](https://github.com/remarkablegames/wavedash-action/commit/de24dca16e6c023a5afb53e09fbbbdc61ceb96a5))
+- **deps:** bump @wvdsh/sdk-js from 1.3.44 to 1.3.45 ([#16](https://github.com/remarkablegames/wavedash-action/issues/16)) ([de24dca](https://github.com/remarkablegames/wavedash-action/commit/de24dca16e6c023a5afb53e09fbbbdc61ceb96a5))
 
 ## [1.1.1](https://github.com/remarkablegames/wavedash-action/compare/v1.1.0...v1.1.1) (2026-08-18)
 
-
 ### Build System
 
-* **deps:** bump @wvdsh/sdk-js from 1.3.43 to 1.3.44 ([#14](https://github.com/remarkablegames/wavedash-action/issues/14)) ([20baf63](https://github.com/remarkablegames/wavedash-action/commit/20baf6317018bd833928c4d878ae15db568be56b))
+- **deps:** bump @wvdsh/sdk-js from 1.3.43 to 1.3.44 ([#14](https://github.com/remarkablegames/wavedash-action/issues/14)) ([20baf63](https://github.com/remarkablegames/wavedash-action/commit/20baf6317018bd833928c4d878ae15db568be56b))
 
 ## [1.1.0](https://github.com/remarkablegames/wavedash-action/compare/v1.0.4...v1.1.0) (2026-08-09)
 
-
 ### Features
 
-* **action:** add optional cache input for wavedash CLI install ([#12](https://github.com/remarkablegames/wavedash-action/issues/12)) ([8ba13c9](https://github.com/remarkablegames/wavedash-action/commit/8ba13c9c6c66e085c92214e2308556876e01f5ee))
+- **action:** add optional cache input for wavedash CLI install ([#12](https://github.com/remarkablegames/wavedash-action/issues/12)) ([8ba13c9](https://github.com/remarkablegames/wavedash-action/commit/8ba13c9c6c66e085c92214e2308556876e01f5ee))
 
 ## [1.0.4](https://github.com/remarkablegames/wavedash-action/compare/v1.0.3...v1.0.4) (2026-08-08)
 
-
 ### Build System
 
-* **deps:** bump @wvdsh/sdk-js from 1.3.41 to 1.3.43 ([#10](https://github.com/remarkablegames/wavedash-action/issues/10)) ([a27139b](https://github.com/remarkablegames/wavedash-action/commit/a27139be40ff944b696b6fa73e755b4aa1268e99))
+- **deps:** bump @wvdsh/sdk-js from 1.3.41 to 1.3.43 ([#10](https://github.com/remarkablegames/wavedash-action/issues/10)) ([a27139b](https://github.com/remarkablegames/wavedash-action/commit/a27139be40ff944b696b6fa73e755b4aa1268e99))
 
 ## [1.0.3](https://github.com/remarkablegames/wavedash-action/compare/v1.0.2...v1.0.3) (2026-08-07)
 
-
 ### Build System
 
-* **deps:** bump @wvdsh/sdk-js from 1.3.40 to 1.3.41 ([#8](https://github.com/remarkablegames/wavedash-action/issues/8)) ([e384fb4](https://github.com/remarkablegames/wavedash-action/commit/e384fb4faeebc53232a8f65d4011f052111a6864))
+- **deps:** bump @wvdsh/sdk-js from 1.3.40 to 1.3.41 ([#8](https://github.com/remarkablegames/wavedash-action/issues/8)) ([e384fb4](https://github.com/remarkablegames/wavedash-action/commit/e384fb4faeebc53232a8f65d4011f052111a6864))
 
 ## [1.0.2](https://github.com/remarkablegames/wavedash-action/compare/v1.0.1...v1.0.2) (2026-08-06)
 
-
 ### Bug Fixes
 
-* **action:** rename input `build-version` to `build-message` ([#6](https://github.com/remarkablegames/wavedash-action/issues/6)) ([19dc80e](https://github.com/remarkablegames/wavedash-action/commit/19dc80ea5918aa372a19135e26cd929fef3803c1))
+- **action:** rename input `build-version` to `build-message` ([#6](https://github.com/remarkablegames/wavedash-action/issues/6)) ([19dc80e](https://github.com/remarkablegames/wavedash-action/commit/19dc80ea5918aa372a19135e26cd929fef3803c1))
 
 ## [1.0.1](https://github.com/remarkablegames/wavedash-action/compare/v1.0.0...v1.0.1) (2026-08-05)
 
-
 ### Performance Improvements
 
-* **sdk:** add modulepreload link before `</head>` for early SDK fetch ([#4](https://github.com/remarkablegames/wavedash-action/issues/4)) ([7d54461](https://github.com/remarkablegames/wavedash-action/commit/7d5446139a8b9e0d1f6d58740f90db6c3fef779c))
+- **sdk:** add modulepreload link before `</head>` for early SDK fetch ([#4](https://github.com/remarkablegames/wavedash-action/issues/4)) ([7d54461](https://github.com/remarkablegames/wavedash-action/commit/7d5446139a8b9e0d1f6d58740f90db6c3fef779c))
 
 ## 1.0.0 (2026-08-05)
 
-
 ### Features
 
-* upload and publish game files to Wavedash ([3da8c96](https://github.com/remarkablegames/wavedash-action/commit/3da8c9687b98c257a28564cf0700e4987c9c68bd))
+- upload and publish game files to Wavedash ([3da8c96](https://github.com/remarkablegames/wavedash-action/commit/3da8c9687b98c257a28564cf0700e4987c9c68bd))
