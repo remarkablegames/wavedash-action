@@ -74,7 +74,7 @@ See [action.yml](action.yml)
 
 ### `token`
 
-**Required**. Your Wavedash API token. Store it as a repository secret (e.g., `WAVEDASH_TOKEN`).
+**Required**. Your Wavedash API [token](https://wavedash.com/dev-portal/keys). Store it as a repository secret (e.g., `WAVEDASH_TOKEN`).
 
 ```yaml
 - uses: remarkablegames/wavedash-action@v2
