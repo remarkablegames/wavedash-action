@@ -15,4 +15,4 @@ jobs:
         run: yamllint -d relaxed .
 
       - name: Validate Python
-        run: uvx ruff check .
+        run: pipx run ruff check .
